@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author : oguzhan.karacorlu
@@ -45,7 +46,7 @@ public class TwitterSeleniumService {
      * @throws InterruptedException
      */
     @PostConstruct
-    private void openChromeWindow() throws InterruptedException {
+    private void openChromeWindow()  {
         WebDriver chromeWebDriver = loadChromeDriver();
         fillInUsername(chromeWebDriver);
         fillInPassword(chromeWebDriver);
@@ -59,8 +60,13 @@ public class TwitterSeleniumService {
      *
      * @param chromeWebDriver
      */
-    private void closeChromeDriver(WebDriver chromeWebDriver) throws InterruptedException {
-        Thread.sleep(150000);
+    private void closeChromeDriver(WebDriver chromeWebDriver) {
+        chromeWebDriver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        try {
+            Thread.sleep(150000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         log.info("-----------> Close Chrome Driver");
         chromeWebDriver.close();
     }
@@ -72,14 +78,14 @@ public class TwitterSeleniumService {
      * @param chromeWebDriver
      * @throws InterruptedException
      */
-    private void searchFilterOnX(WebDriver chromeWebDriver) throws InterruptedException {
+    private void searchFilterOnX(WebDriver chromeWebDriver) {
         log.info("-----------> Search filter on X");
         WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
         LocalDate todayDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String todayFilter = " since:" + todayDate.format(dateTimeFormatter);
         searchTextArea.sendKeys(filterText + todayFilter);
-        Thread.sleep(3000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         searchTextArea.sendKeys(Keys.RETURN);
     }
 
@@ -89,11 +95,11 @@ public class TwitterSeleniumService {
      * @param chromeWebDriver
      * @throws InterruptedException
      */
-    private void checkUsernameAndPassword(WebDriver chromeWebDriver) throws InterruptedException {
+    private void checkUsernameAndPassword(WebDriver chromeWebDriver) {
         log.info("-----------> Fill in username and password");
         WebElement clickUsernameAndPasswordControl = chromeWebDriver.findElement(By.xpath("//*[@data-testid='LoginForm_Login_Button']"));
         clickUsernameAndPasswordControl.click();
-        Thread.sleep(2000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
     }
 
     /**
@@ -101,11 +107,11 @@ public class TwitterSeleniumService {
      *
      * @param chromeWebDriver
      */
-    private void fillInPassword(WebDriver chromeWebDriver) throws InterruptedException {
+    private void fillInPassword(WebDriver chromeWebDriver) {
         log.info("-----------> Fill in password");
         WebElement inputFieldPassword = chromeWebDriver.findElement(By.xpath("//*[@autocomplete='current-password']"));
         inputFieldPassword.sendKeys(twitterPassword);
-        Thread.sleep(2000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
     }
 
     /**
@@ -113,15 +119,15 @@ public class TwitterSeleniumService {
      *
      * @param chromeWebDriver
      */
-    private void fillInUsername(WebDriver chromeWebDriver) throws InterruptedException {
+    private void fillInUsername(WebDriver chromeWebDriver) {
         log.info("-----------> Fill in username");
         WebElement inputFieldUsername = chromeWebDriver.findElement(By.xpath("//*[@autocomplete='username']"));
         inputFieldUsername.sendKeys(twitterUsername);
-        Thread.sleep(2000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         WebElement clickNextButton = chromeWebDriver.findElement(By.xpath("/html/body/div/div/div/div[1]/div/div/div/div/div/div/div[2]/div[2]/div/div/div[2]/div[2]/div/div/div/div[6]"));
-        Thread.sleep(2000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         clickNextButton.click();
-        Thread.sleep(2000);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
     }
 
     /**
@@ -129,13 +135,13 @@ public class TwitterSeleniumService {
      *
      * @return
      */
-    private WebDriver loadChromeDriver() throws InterruptedException {
+    private WebDriver loadChromeDriver() {
         log.info("-----------> Load Chrome Driver");
         System.setProperty("webdriver.chrome.driver", chromeDriverPath);
         WebDriver driver = new ChromeDriver();
         driver.manage().window().maximize();
         driver.get(openWebURL);
-        Thread.sleep(4000);
+        driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS);
         return driver;
     }
 }
