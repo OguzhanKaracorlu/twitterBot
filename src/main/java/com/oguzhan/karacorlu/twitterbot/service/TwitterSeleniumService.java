@@ -31,14 +31,21 @@ public class TwitterSeleniumService {
     @Value("${open.web.url}")
     private String openWebURL;
 
-    @Value("${twitter.username}")
+    @Value("${x.username}")
     private String twitterUsername;
 
-    @Value("${twitter.password}")
+    @Value("${x.password}")
     private String twitterPassword;
 
-    @Value("${twitter.filter}")
-    private String filterText;
+    @Value("${filter.minimum.retweet.count}")
+    private String filterRetweetCount;
+
+    @Value("${filter.minimum.likes.count}")
+    private String filterLikesCount;
+
+    @Value("${filter.language}")
+    private String filterLanguage;
+
 
     /**
      * Start Chrome Page and go to X login page.
@@ -46,7 +53,7 @@ public class TwitterSeleniumService {
      * @throws InterruptedException
      */
     @PostConstruct
-    private void openChromeWindow()  {
+    private void openChromeWindow() {
         WebDriver chromeWebDriver = loadChromeDriver();
         fillInUsername(chromeWebDriver);
         fillInPassword(chromeWebDriver);
@@ -81,12 +88,47 @@ public class TwitterSeleniumService {
     private void searchFilterOnX(WebDriver chromeWebDriver) {
         log.info("-----------> Search filter on X");
         WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
-        LocalDate todayDate = LocalDate.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String todayFilter = " since:" + todayDate.format(dateTimeFormatter);
-        searchTextArea.sendKeys(filterText + todayFilter);
+        searchTextArea.sendKeys(createMinimumRetweetsFilter() + " and " + createMinimumLikesFilter() + createTodayFormatFilter() + createLanguageFilter());
         chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         searchTextArea.sendKeys(Keys.RETURN);
+    }
+
+    /**
+     * Create Language Filter for X's filter.
+     *
+     * @return
+     */
+    private String createLanguageFilter() {
+        return " lang:" + filterLanguage;
+    }
+
+    /**
+     * Create Minimum Likes Filter for X's filter.
+     *
+     * @return
+     */
+    private String createMinimumLikesFilter() {
+        return " min_faves:" + filterLikesCount;
+    }
+
+    /**
+     * Create Minimum Retweets Filter for X's filter.
+     *
+     * @return
+     */
+    private String createMinimumRetweetsFilter() {
+        return " min_retweets:" + filterRetweetCount;
+    }
+
+    /**
+     * Create Today Formatter for X's filter.
+     *
+     * @return
+     */
+    private String createTodayFormatFilter() {
+        LocalDate todayDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return " since:" + todayDate.format(dateTimeFormatter);
     }
 
     /**
