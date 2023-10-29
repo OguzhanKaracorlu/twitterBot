@@ -5,11 +5,11 @@ import com.oguzhan.karacorlu.twitterbot.util.CreatePropertiesForFilter;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +35,8 @@ public class TwitterSeleniumService {
 
     @Value("${x.password}")
     private String twitterPassword;
+
+    private HashMap<String,PostDTO> postList = new HashMap<>();
 
     private final CreatePropertiesForFilter createPropertiesForFilter;
 
@@ -135,17 +137,21 @@ public class TwitterSeleniumService {
      *
      * @param chromeWebDriver
      */
+    //TODO Ask Ömer if the scroll doesn't go all the way down to the end.
     private void scrollToEndPage(WebDriver chromeWebDriver) {
         getTweetsAnalytics(chromeWebDriver);
         for (int i = 0; i < 10; i++) {
             JavascriptExecutor js = (JavascriptExecutor) chromeWebDriver;
-            js.executeScript("window.scrollTo(0, document.body.scrollHeight/2);");
+            js.executeScript("window.scrollTo(0, document.body.scrollHeight/3);");
             try {
                 Thread.sleep(2000);
                 getTweetsAnalytics(chromeWebDriver);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+        for (PostDTO postDTO : postList.values()){
+            System.out.println(postDTO.toString());
         }
         chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
     }
@@ -164,12 +170,14 @@ public class TwitterSeleniumService {
             String tweetText = twit.getText();
             String[] tweet = tweetText.split("\n");
             if (!tweetText.isEmpty() && tweet.length > 4) {
+                String postLink = chromeWebDriver.findElement(By.xpath("//a[starts-with(@href, '/" + tweet[1].replaceAll("@", "") + "/status/')]")).getAttribute("href");
+                postDTO.setPostLink(postLink);
                 postDTO.setUserName(tweet[1]);
                 postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
                 postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
                 postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
                 postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-                System.out.println(postDTO.toString());
+                postList.put(postLink, postDTO);
             }
         }
     }
