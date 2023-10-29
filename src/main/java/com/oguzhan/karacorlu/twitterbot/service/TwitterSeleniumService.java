@@ -3,16 +3,13 @@ package com.oguzhan.karacorlu.twitterbot.service;
 import com.oguzhan.karacorlu.twitterbot.dto.PostDTO;
 import com.oguzhan.karacorlu.twitterbot.util.CreatePropertiesForFilter;
 import lombok.extern.log4j.Log4j2;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -57,7 +54,8 @@ public class TwitterSeleniumService {
         fillInPassword(chromeWebDriver);
         checkUsernameAndPassword(chromeWebDriver);
         searchFilterOnX(chromeWebDriver);
-        getTweetsAnalytics(chromeWebDriver);
+        scrollToEndPage(chromeWebDriver);
+        //getTweetsAnalytics(chromeWebDriver);
         closeChromeDriver(chromeWebDriver);
     }
 
@@ -128,8 +126,28 @@ public class TwitterSeleniumService {
         log.info("-----------> Search filter on X");
         WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
         searchTextArea.sendKeys(createPropertiesForFilter.createFullFilter());
-        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         searchTextArea.sendKeys(Keys.RETURN);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * It lowers the scroll bar to the bottom to load all posts.
+     *
+     * @param chromeWebDriver
+     */
+    private void scrollToEndPage(WebDriver chromeWebDriver) {
+        getTweetsAnalytics(chromeWebDriver);
+        for (int i = 0; i < 10; i++) {
+            JavascriptExecutor js = (JavascriptExecutor) chromeWebDriver;
+            js.executeScript("window.scrollTo(0, document.body.scrollHeight/2);");
+            try {
+                Thread.sleep(2000);
+                getTweetsAnalytics(chromeWebDriver);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
     }
 
     /**
@@ -145,11 +163,14 @@ public class TwitterSeleniumService {
             PostDTO postDTO = new PostDTO();
             String tweetText = twit.getText();
             String[] tweet = tweetText.split("\n");
-            postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-            postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-            postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-            postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-            System.out.println(postDTO.toString());
+            if (!tweetText.isEmpty() && tweet.length > 4) {
+                postDTO.setUserName(tweet[1]);
+                postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+                postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+                postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+                postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+                System.out.println(postDTO.toString());
+            }
         }
     }
 
