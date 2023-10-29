@@ -1,5 +1,6 @@
 package com.oguzhan.karacorlu.twitterbot.service;
 
+import com.oguzhan.karacorlu.twitterbot.dto.PostDTO;
 import com.oguzhan.karacorlu.twitterbot.util.CreatePropertiesForFilter;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.By;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -139,11 +141,15 @@ public class TwitterSeleniumService {
 
         List<WebElement> twits = chromeWebDriver.findElements(By.xpath("//*[@data-testid='cellInnerDiv']"));
 
-        // username in second element
         for (WebElement twit : twits) {
+            PostDTO postDTO = new PostDTO();
             String tweetText = twit.getText();
             String[] tweet = tweetText.split("\n");
-            System.out.println(tweet);
+            postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+            postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+            postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+            postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+            System.out.println(postDTO.toString());
         }
     }
 
