@@ -181,9 +181,11 @@ public class TwitterSeleniumService {
 
         List<WebElement> twits = chromeWebDriver.findElements(By.xpath("//*[@data-testid='cellInnerDiv']"));
 
+        // username in second element
         for (WebElement twit : twits) {
             String tweetText = twit.getText();
-            System.out.println(tweetText);
+            String[] tweet = tweetText.split("\n");
+            System.out.println(tweet);
         }
     }
 
