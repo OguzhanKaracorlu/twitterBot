@@ -1,5 +1,6 @@
 package com.oguzhan.karacorlu.twitterbot.service;
 
+import com.oguzhan.karacorlu.twitterbot.util.CreatePropertiesForFilter;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -10,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,14 +37,11 @@ public class TwitterSeleniumService {
     @Value("${x.password}")
     private String twitterPassword;
 
-    @Value("${filter.minimum.retweet.count}")
-    private String filterRetweetCount;
+    private final CreatePropertiesForFilter createPropertiesForFilter;
 
-    @Value("${filter.minimum.likes.count}")
-    private String filterLikesCount;
-
-    @Value("${filter.language}")
-    private String filterLanguage;
+    public TwitterSeleniumService(CreatePropertiesForFilter createPropertiesForFilter) {
+        this.createPropertiesForFilter = createPropertiesForFilter;
+    }
 
     /**
      * Start Chrome Page and go to X login page.
@@ -76,44 +72,6 @@ public class TwitterSeleniumService {
         driver.get(openWebURL);
         driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS);
         return driver;
-    }
-
-    /**
-     * Create Language Filter for X's filter.
-     *
-     * @return
-     */
-    private String createLanguageFilter() {
-        return " lang:" + filterLanguage;
-    }
-
-    /**
-     * Create Minimum Likes Filter for X's filter.
-     *
-     * @return
-     */
-    private String createMinimumLikesFilter() {
-        return "min_faves:" + filterLikesCount;
-    }
-
-    /**
-     * Create Minimum Retweets Filter for X's filter.
-     *
-     * @return
-     */
-    private String createMinimumRetweetsFilter() {
-        return " min_retweets:" + filterRetweetCount;
-    }
-
-    /**
-     * Create Today Formatter for X's filter.
-     *
-     * @return
-     */
-    private String createTodayFormatFilter() {
-        LocalDate todayDate = LocalDate.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return " since:" + todayDate.format(dateTimeFormatter);
     }
 
     /**
@@ -167,7 +125,7 @@ public class TwitterSeleniumService {
     private void searchFilterOnX(WebDriver chromeWebDriver) {
         log.info("-----------> Search filter on X");
         WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
-        searchTextArea.sendKeys(createMinimumRetweetsFilter() + " and " + createMinimumLikesFilter() + createTodayFormatFilter() + createLanguageFilter());
+        searchTextArea.sendKeys(createPropertiesForFilter.createFullFilter());
         chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         searchTextArea.sendKeys(Keys.RETURN);
     }
