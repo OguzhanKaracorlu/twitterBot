@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,7 +47,6 @@ public class TwitterSeleniumService {
     @Value("${filter.language}")
     private String filterLanguage;
 
-
     /**
      * Start Chrome Page and go to X login page.
      *
@@ -59,38 +59,23 @@ public class TwitterSeleniumService {
         fillInPassword(chromeWebDriver);
         checkUsernameAndPassword(chromeWebDriver);
         searchFilterOnX(chromeWebDriver);
+        getTweetsAnalytics(chromeWebDriver);
         closeChromeDriver(chromeWebDriver);
     }
 
     /**
-     * Close the Chrome Driver.
+     * Load Chrome Driver with in application.properties chrome.driver.path.
      *
-     * @param chromeWebDriver
+     * @return
      */
-    private void closeChromeDriver(WebDriver chromeWebDriver) {
-        chromeWebDriver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
-        try {
-            Thread.sleep(150000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        log.info("-----------> Close Chrome Driver");
-        chromeWebDriver.close();
-    }
-
-    /**
-     * Search Filter on X.
-     * Filter in the application.properties's twitter.filter.
-     *
-     * @param chromeWebDriver
-     * @throws InterruptedException
-     */
-    private void searchFilterOnX(WebDriver chromeWebDriver) {
-        log.info("-----------> Search filter on X");
-        WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
-        searchTextArea.sendKeys(createMinimumRetweetsFilter() + " and " + createMinimumLikesFilter() + createTodayFormatFilter() + createLanguageFilter());
-        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-        searchTextArea.sendKeys(Keys.RETURN);
+    private WebDriver loadChromeDriver() {
+        log.info("-----------> Load Chrome Driver");
+        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+        WebDriver driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        driver.get(openWebURL);
+        driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS);
+        return driver;
     }
 
     /**
@@ -108,7 +93,7 @@ public class TwitterSeleniumService {
      * @return
      */
     private String createMinimumLikesFilter() {
-        return " min_faves:" + filterLikesCount;
+        return "min_faves:" + filterLikesCount;
     }
 
     /**
@@ -132,31 +117,6 @@ public class TwitterSeleniumService {
     }
 
     /**
-     * Check username and password method.
-     *
-     * @param chromeWebDriver
-     * @throws InterruptedException
-     */
-    private void checkUsernameAndPassword(WebDriver chromeWebDriver) {
-        log.info("-----------> Fill in username and password");
-        WebElement clickUsernameAndPasswordControl = chromeWebDriver.findElement(By.xpath("//*[@data-testid='LoginForm_Login_Button']"));
-        clickUsernameAndPasswordControl.click();
-        chromeWebDriver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Fill in Twitter login page's password label.
-     *
-     * @param chromeWebDriver
-     */
-    private void fillInPassword(WebDriver chromeWebDriver) {
-        log.info("-----------> Fill in password");
-        WebElement inputFieldPassword = chromeWebDriver.findElement(By.xpath("//*[@autocomplete='current-password']"));
-        inputFieldPassword.sendKeys(twitterPassword);
-        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-    }
-
-    /**
      * Fill in Twitter login page's username label.
      *
      * @param chromeWebDriver
@@ -173,17 +133,73 @@ public class TwitterSeleniumService {
     }
 
     /**
-     * Load Chrome Driver with in application.properties chrome.driver.path.
+     * Fill in Twitter login page's password label.
      *
-     * @return
+     * @param chromeWebDriver
      */
-    private WebDriver loadChromeDriver() {
-        log.info("-----------> Load Chrome Driver");
-        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
-        WebDriver driver = new ChromeDriver();
-        driver.manage().window().maximize();
-        driver.get(openWebURL);
-        driver.manage().timeouts().implicitlyWait(4, TimeUnit.SECONDS);
-        return driver;
+    private void fillInPassword(WebDriver chromeWebDriver) {
+        log.info("-----------> Fill in password");
+        WebElement inputFieldPassword = chromeWebDriver.findElement(By.xpath("//*[@autocomplete='current-password']"));
+        inputFieldPassword.sendKeys(twitterPassword);
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Check username and password method.
+     *
+     * @param chromeWebDriver
+     * @throws InterruptedException
+     */
+    private void checkUsernameAndPassword(WebDriver chromeWebDriver) {
+        log.info("-----------> Fill in username and password");
+        WebElement clickUsernameAndPasswordControl = chromeWebDriver.findElement(By.xpath("//*[@data-testid='LoginForm_Login_Button']"));
+        clickUsernameAndPasswordControl.click();
+        chromeWebDriver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Search Filter on X.
+     * Filter in the application.properties's twitter.filter.
+     *
+     * @param chromeWebDriver
+     * @throws InterruptedException
+     */
+    private void searchFilterOnX(WebDriver chromeWebDriver) {
+        log.info("-----------> Search filter on X");
+        WebElement searchTextArea = chromeWebDriver.findElement(By.xpath("//*[@enterkeyhint='search']"));
+        searchTextArea.sendKeys(createMinimumRetweetsFilter() + " and " + createMinimumLikesFilter() + createTodayFormatFilter() + createLanguageFilter());
+        chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        searchTextArea.sendKeys(Keys.RETURN);
+    }
+
+    /**
+     * The tweets found as a result of the filtering process are converted into a java object.
+     *
+     * @param chromeWebDriver
+     */
+    private void getTweetsAnalytics(WebDriver chromeWebDriver) {
+
+        List<WebElement> twits = chromeWebDriver.findElements(By.xpath("//*[@data-testid='cellInnerDiv']"));
+
+        for (WebElement twit : twits) {
+            String tweetText = twit.getText();
+            System.out.println(tweetText);
+        }
+    }
+
+    /**
+     * Close the Chrome Driver.
+     *
+     * @param chromeWebDriver
+     */
+    private void closeChromeDriver(WebDriver chromeWebDriver) {
+        chromeWebDriver.manage().timeouts().implicitlyWait(60, TimeUnit.SECONDS);
+        try {
+            Thread.sleep(150000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("-----------> Close Chrome Driver");
+        chromeWebDriver.close();
     }
 }
