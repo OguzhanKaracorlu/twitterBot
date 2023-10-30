@@ -36,7 +36,7 @@ public class TwitterSeleniumService {
     @Value("${x.password}")
     private String twitterPassword;
 
-    private HashMap<String,PostDTO> postList = new HashMap<>();
+    private HashMap<String, PostDTO> postList = new HashMap<>();
 
     private final CreatePropertiesForFilter createPropertiesForFilter;
 
@@ -140,8 +140,8 @@ public class TwitterSeleniumService {
     //TODO Ask Ömer if the scroll doesn't go all the way down to the end.
     private void scrollToEndPage(WebDriver chromeWebDriver) {
         getTweetsAnalytics(chromeWebDriver);
+        JavascriptExecutor js = (JavascriptExecutor) chromeWebDriver;
         for (int i = 0; i < 10; i++) {
-            JavascriptExecutor js = (JavascriptExecutor) chromeWebDriver;
             js.executeScript("window.scrollTo(0, document.body.scrollHeight/3);");
             try {
                 Thread.sleep(2000);
@@ -150,10 +150,9 @@ public class TwitterSeleniumService {
                 e.printStackTrace();
             }
         }
-        for (PostDTO postDTO : postList.values()){
-            System.out.println(postDTO.toString());
-        }
+
         chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        checkUserProfileSuitability(chromeWebDriver);
     }
 
     /**
@@ -180,6 +179,32 @@ public class TwitterSeleniumService {
                 postList.put(postLink, postDTO);
             }
         }
+    }
+
+    /**
+     * Users' following and number of followers are checked.
+     */
+    private void checkUserProfileSuitability(WebDriver chromeWebDriver) {
+        for (String key : postList.keySet()) {
+            PostDTO postDTO = postList.get(key);
+            String username = postDTO.getUserName().replaceAll("@", "");
+            chromeWebDriver.get("https://twitter.com/" + username);
+            chromeWebDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+            List<WebElement> elements = chromeWebDriver.findElements(By.xpath("//*[@class='css-901oao css-16my406 r-1nao33i r-poiln3 r-1b43r93 r-b88u0q r-1cwl3u0 r-bcqeeo r-qvutc0']"));
+            if (elements.size() >= 2) {
+                WebElement firstElement = elements.get(0);
+                WebElement secondElement = elements.get(1);
+                int following = Integer.parseInt(firstElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
+                int followers = Integer.parseInt(secondElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
+                postDTO.setUserProfileSuitability(following <= 2000 && followers <= 800000);
+                postList.put(key, postDTO);
+            }
+
+            for (PostDTO postDTO2 : postList.values()) {
+                System.out.println(postDTO2.toString());
+            }
+        }
+
     }
 
     /**
