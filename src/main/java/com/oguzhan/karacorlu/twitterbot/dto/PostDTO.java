@@ -24,6 +24,7 @@ public class PostDTO {
     private Integer viewsCount;
     private Integer userFollowersCount;
     private Integer userFollowedCount;
+    private Boolean userProfileSuitability;
 
     @Override
     public String toString() {
@@ -36,6 +37,7 @@ public class PostDTO {
                 ", viewsCount=" + viewsCount +
                 ", userFollowersCount=" + userFollowersCount +
                 ", userFollowedCount=" + userFollowedCount +
+                ", userProfileSuitability=" + userProfileSuitability +
                 '}';
     }
 }
