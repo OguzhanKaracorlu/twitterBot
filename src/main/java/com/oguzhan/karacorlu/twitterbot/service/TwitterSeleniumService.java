@@ -196,6 +196,8 @@ public class TwitterSeleniumService {
                 WebElement secondElement = elements.get(1);
                 int following = Integer.parseInt(firstElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
                 int followers = Integer.parseInt(secondElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
+                postDTO.setUserFollowedCount(following);
+                postDTO.setUserFollowersCount(followers);
                 postDTO.setUserProfileSuitability(following <= 2000 && followers <= 800000);
                 postList.put(key, postDTO);
             }
