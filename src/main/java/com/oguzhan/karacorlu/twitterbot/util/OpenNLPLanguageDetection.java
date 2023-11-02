@@ -1,5 +1,6 @@
 package com.oguzhan.karacorlu.twitterbot.util;
 
+import lombok.SneakyThrows;
 import opennlp.tools.langdetect.Language;
 import opennlp.tools.langdetect.LanguageDetector;
 import opennlp.tools.langdetect.LanguageDetectorME;
@@ -21,16 +22,11 @@ public class OpenNLPLanguageDetection {
      * @param tweet
      * @return
      */
-    public String detectionTweetLanguage(String tweet){
-        try {
-            LanguageDetectorModel model = new LanguageDetectorModel(new File("src/main/resources/langdetect-183.bin"));
-            LanguageDetector languageDetector = new LanguageDetectorME(model);
-            Language[] languages = languageDetector.predictLanguages(tweet);
-            String detectedLanguage = languages[0].getLang();
-
-            System.out.println("Metin dili: " + detectedLanguage);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @SneakyThrows
+    public String detectionTweetLanguage(String tweet) {
+        LanguageDetectorModel model = new LanguageDetectorModel(new File("src/main/resources/langdetect-183.bin"));
+        LanguageDetector languageDetector = new LanguageDetectorME(model);
+        Language[] languages = languageDetector.predictLanguages("selam merhaba");
+        return languages[0].getLang();
     }
 }
