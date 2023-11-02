@@ -5,6 +5,8 @@ It filters the specified minimum number of retweets and likes in the specified l
 
 It deletes from the list the owners of the posts it finds who have more than 800 thousand followers or more than 2000 people they follow(This part has not been developed yet).
 
+It detects the language of the posts it finds with the Apache  OpenNLP algorithm. It continues with those in Turkish, and posts that are not marked as Turkish will not be added to the list. For more information https://opennlp.apache.org/ .
+
 Finally, it aims to share the resulting list as "The 10 Most Interacted Posts of the Day" on a Twitter account every day at 22:00(This part has not been developed yet).
 
 This project was developed in memory of the @fikrithebot account, which works with the Twitter v1 API, but became deactivated due to the end of Twitter's v1 API support and requiring a fee to perform these operations with the v2 API (https://twitter.com/fikrithebot). Best regards @fikrithebot!
