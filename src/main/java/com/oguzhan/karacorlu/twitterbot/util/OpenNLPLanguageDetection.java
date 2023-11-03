@@ -15,6 +15,16 @@ import java.io.File;
  */
 public class OpenNLPLanguageDetection {
 
+
+    private static OpenNLPLanguageDetection instance;
+
+    public static OpenNLPLanguageDetection getInstance() {
+        if (instance == null) {
+            instance = new OpenNLPLanguageDetection();
+        }
+        return instance;
+    }
+
     /**
      * Its function detects the language of the content of the sent post.
      * Returns the abbreviation of the most likely result as a String.
@@ -23,10 +33,10 @@ public class OpenNLPLanguageDetection {
      * @return
      */
     @SneakyThrows
-    public String detectionTweetLanguage(String tweet) {
+    public Boolean detectionTweetLanguage(String tweet) {
         LanguageDetectorModel model = new LanguageDetectorModel(new File("src/main/resources/langdetect-183.bin"));
         LanguageDetector languageDetector = new LanguageDetectorME(model);
         Language[] languages = languageDetector.predictLanguages("selam merhaba");
-        return languages[0].getLang();
+        return languages[0].getLang().contains("tur");
     }
 }

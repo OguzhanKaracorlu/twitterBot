@@ -2,6 +2,7 @@ package com.oguzhan.karacorlu.twitterbot.service;
 
 import com.oguzhan.karacorlu.twitterbot.dto.PostDTO;
 import com.oguzhan.karacorlu.twitterbot.util.CreatePropertiesForFilter;
+import com.oguzhan.karacorlu.twitterbot.util.OpenNLPLanguageDetection;
 import lombok.extern.log4j.Log4j2;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -176,7 +177,9 @@ public class TwitterSeleniumService {
                 postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
                 postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
                 postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-                postList.put(postLink, postDTO);
+                if (OpenNLPLanguageDetection.getInstance().detectionTweetLanguage(twit.getText())) {
+                    postList.put(postLink, postDTO);
+                }
             }
         }
     }
