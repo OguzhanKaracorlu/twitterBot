@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @author : oguzhan.karacorlu
@@ -37,7 +40,7 @@ public class TwitterSeleniumService {
     @Value("${x.password}")
     private String twitterPassword;
 
-    private HashMap<String, PostDTO> postList = new HashMap<>();
+    private ConcurrentHashMap<String, PostDTO> postList = new ConcurrentHashMap<>();
 
     private final CreatePropertiesForFilter createPropertiesForFilter;
 
@@ -60,6 +63,7 @@ public class TwitterSeleniumService {
         scrollToEndPage(chromeWebDriver);
         checkUserProfileSuitability(chromeWebDriver);
         deleteFalseUserProfileSuitability();
+        sortList();
         closeChromeDriver(chromeWebDriver);
     }
 
@@ -214,6 +218,8 @@ public class TwitterSeleniumService {
             PostDTO postDTO = postList.get(key);
             if (!postDTO.getUserProfileSuitability()) {
                 postList.remove(key,postDTO);
+            } else {
+                postDTO.setTotalInteraction(postDTO.getLikesCount() + postDTO.getResponsesCount() + postDTO.getRetweetsCount() + postDTO.getViewsCount());
             }
         }
 
@@ -221,6 +227,17 @@ public class TwitterSeleniumService {
             System.out.println(postDTO2.toString());
         }
 
+    }
+
+    /**
+     * Sorts the list by total number of interactions.
+     */
+    private void sortList() {
+        List<Map.Entry<String, PostDTO>> sortedList = postList.entrySet().stream()
+                .sorted((entry1, entry2) -> entry2.getValue().getTotalInteraction().compareTo(entry1.getValue().getTotalInteraction()))
+                .collect(Collectors.toList());
+
+        System.out.println("--- " + sortedList);
     }
 
     /**
