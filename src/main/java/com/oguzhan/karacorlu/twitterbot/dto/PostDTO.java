@@ -1,6 +1,5 @@
 package com.oguzhan.karacorlu.twitterbot.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,6 +24,7 @@ public class PostDTO {
     private Integer userFollowersCount;
     private Integer userFollowedCount;
     private Boolean userProfileSuitability;
+    private Integer totalInteraction;
 
     @Override
     public String toString() {
@@ -38,6 +38,7 @@ public class PostDTO {
                 ", userFollowersCount=" + userFollowersCount +
                 ", userFollowedCount=" + userFollowedCount +
                 ", userProfileSuitability=" + userProfileSuitability +
+                ", totalInteraction=" + totalInteraction +
                 '}';
     }
 }

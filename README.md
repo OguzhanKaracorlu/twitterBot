@@ -3,7 +3,7 @@ It is a project that aims to log in to Twitter and find popular tweets with Sele
 
 It filters the specified minimum number of retweets and likes in the specified language in the Twitter searches section. Converts the posts found in the filter result to PostDTO. 
 
-It deletes from the list the owners of the posts it finds who have more than 800 thousand followers or more than 2000 people they follow(This part has not been developed yet).
+It deletes from the list the owners of the posts it finds who have more than 800 thousand followers or more than 2000 people they follow.
 
 It detects the language of the posts it finds with the Apache  OpenNLP algorithm. It continues with those in Turkish, and posts that are not marked as Turkish will not be added to the list. For more information https://opennlp.apache.org/ .
 
