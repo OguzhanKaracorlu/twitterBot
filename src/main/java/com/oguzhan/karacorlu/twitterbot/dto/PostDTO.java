@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Objects;
+
 /**
  * @author oguzhan.karacorlu
  * @project twitterBot
@@ -40,5 +42,18 @@ public class PostDTO {
                 ", userProfileSuitability=" + userProfileSuitability +
                 ", totalInteraction=" + totalInteraction +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PostDTO)) return false;
+        PostDTO postDTO = (PostDTO) o;
+        return Objects.equals(getPostLink(), postDTO.getPostLink()) && Objects.equals(getUserName(), postDTO.getUserName()) && Objects.equals(getResponsesCount(), postDTO.getResponsesCount()) && Objects.equals(getLikesCount(), postDTO.getLikesCount()) && Objects.equals(getRetweetsCount(), postDTO.getRetweetsCount()) && Objects.equals(getViewsCount(), postDTO.getViewsCount()) && Objects.equals(getUserFollowersCount(), postDTO.getUserFollowersCount()) && Objects.equals(getUserFollowedCount(), postDTO.getUserFollowedCount()) && Objects.equals(getUserProfileSuitability(), postDTO.getUserProfileSuitability()) && Objects.equals(getTotalInteraction(), postDTO.getTotalInteraction());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getPostLink(), getUserName(), getResponsesCount(), getLikesCount(), getRetweetsCount(), getViewsCount(), getUserFollowersCount(), getUserFollowedCount(), getUserProfileSuitability(), getTotalInteraction());
     }
 }
