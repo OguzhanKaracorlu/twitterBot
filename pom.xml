@@ -14,7 +14,7 @@
     <name>twitterbot</name>
     <description>It is a project that aims to log in to Twitter and find popular tweets with Selenium.</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
