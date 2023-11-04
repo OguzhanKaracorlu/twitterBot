@@ -36,7 +36,7 @@ public class OpenNLPLanguageDetection {
     public Boolean detectionTweetLanguage(String tweet) {
         LanguageDetectorModel model = new LanguageDetectorModel(new File("src/main/resources/langdetect-183.bin"));
         LanguageDetector languageDetector = new LanguageDetectorME(model);
-        Language[] languages = languageDetector.predictLanguages("selam merhaba");
+        Language[] languages = languageDetector.predictLanguages(tweet);
         return languages[0].getLang().contains("tur");
     }
 }
