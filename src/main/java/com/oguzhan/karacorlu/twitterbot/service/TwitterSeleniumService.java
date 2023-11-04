@@ -58,7 +58,8 @@ public class TwitterSeleniumService {
         checkUsernameAndPassword(chromeWebDriver);
         searchFilterOnX(chromeWebDriver);
         scrollToEndPage(chromeWebDriver);
-        //getTweetsAnalytics(chromeWebDriver);
+        checkUserProfileSuitability(chromeWebDriver);
+        deleteFalseUserProfileSuitability();
         closeChromeDriver(chromeWebDriver);
     }
 
@@ -151,9 +152,7 @@ public class TwitterSeleniumService {
                 e.printStackTrace();
             }
         }
-
         chromeWebDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-        checkUserProfileSuitability(chromeWebDriver);
     }
 
     /**
@@ -173,10 +172,10 @@ public class TwitterSeleniumService {
                 String postLink = chromeWebDriver.findElement(By.xpath("//a[starts-with(@href, '/" + tweet[1].replaceAll("@", "") + "/status/')]")).getAttribute("href");
                 postDTO.setPostLink(postLink);
                 postDTO.setUserName(tweet[1]);
-                postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-                postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-                postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
-                postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replace("B", "000").replace("Mn", "00000").replaceAll("\\s", "")));
+                postDTO.setResponsesCount(Integer.valueOf(tweet[tweet.length - 4].replaceAll("B|K", "000").replaceAll("Mn|M", "00000").replaceAll("[,\\.\\p{Z}]", "")));
+                postDTO.setRetweetsCount(Integer.valueOf(tweet[tweet.length - 3].replaceAll("B|K", "000").replaceAll("Mn|M", "00000").replaceAll("[,\\.\\p{Z}]", "")));
+                postDTO.setLikesCount(Integer.valueOf(tweet[tweet.length - 2].replaceAll("B|K", "000").replaceAll("Mn|M", "00000").replaceAll("[,\\.\\p{Z}]", "")));
+                postDTO.setViewsCount(Integer.valueOf(tweet[tweet.length - 1].replaceAll("B|K", "000").replaceAll("Mn|M", "00000").replaceAll("[,\\.\\p{Z}]", "")));
                 if (OpenNLPLanguageDetection.getInstance().detectionTweetLanguage(twit.getText())) {
                     postList.put(postLink, postDTO);
                 }
@@ -197,17 +196,29 @@ public class TwitterSeleniumService {
             if (elements.size() >= 2) {
                 WebElement firstElement = elements.get(0);
                 WebElement secondElement = elements.get(1);
-                int following = Integer.parseInt(firstElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
-                int followers = Integer.parseInt(secondElement.getAttribute("innerText").replace("B", "000").replace("Mn", "00000").replaceAll("[,\\.\\p{Z}]", ""));
+                int following = Integer.parseInt(firstElement.getAttribute("innerText").replaceAll("B|K", "00").replaceAll("Mn|M", "000000").replaceAll("[,\\.\\p{Z}]", ""));
+                int followers = Integer.parseInt(secondElement.getAttribute("innerText").replaceAll("B|K", "00").replaceAll("Mn|M", "000000").replaceAll("[,\\.\\p{Z}]", ""));
                 postDTO.setUserFollowedCount(following);
                 postDTO.setUserFollowersCount(followers);
                 postDTO.setUserProfileSuitability(following <= 2000 && followers <= 800000);
                 postList.put(key, postDTO);
             }
+        }
+    }
 
-            for (PostDTO postDTO2 : postList.values()) {
-                System.out.println(postDTO2.toString());
+    /**
+     * Deletes unsuitable profiles from postList
+     */
+    private void deleteFalseUserProfileSuitability() {
+        for (String key : postList.keySet()) {
+            PostDTO postDTO = postList.get(key);
+            if (!postDTO.getUserProfileSuitability()) {
+                postList.remove(key,postDTO);
             }
+        }
+
+        for (PostDTO postDTO2 : postList.values()) {
+            System.out.println(postDTO2.toString());
         }
 
     }
